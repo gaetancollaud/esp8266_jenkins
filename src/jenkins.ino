@@ -12,6 +12,7 @@
 #include <OTA.h>
 
 #include "../config/config.h"
+#define MAX_LUMINOSITY 40
 
 // SKETCH BEGIN
 AsyncWebServer server(80);
@@ -28,27 +29,38 @@ OTA ota(deviceName, BUILTIN_LED);
 
 void setup(){
   Serial.begin(115200);
-  Serial.setDebugOutput(true);
+  pinMode(BUILTIN_LED, OUTPUT);
+  digitalWrite(BUILTIN_LED, HIGH);
+
   WiFi.begin(CONFIG_SSID, CONFIG_PASSWORD);
 
   MDNS.addService("http","tcp",80);
 
+  static WiFiEventHandler e1, e2;
+  e1 = WiFi.onStationModeGotIP([](WiFiEventStationModeGotIP ipInfo){
+    Serial.printf("Got IP: %s\r\n", ipInfo.ip.toString().c_str());
+    digitalWrite(BUILTIN_LED, LOW);
+  });
+	e2 = WiFi.onStationModeDisconnected([](WiFiEventStationModeDisconnected event_info){
+    digitalWrite(BUILTIN_LED, HIGH);
+  });
+
   server.on("/heap", HTTP_GET, [](AsyncWebServerRequest *request){
     request->send(200, "text/plain", String(ESP.getFreeHeap()));
   });
-  server.on("/success", HTTP_GET, [&ledStrip](AsyncWebServerRequest *request){
-    ledStrip.setColor(RgbColor(0, 100, 0));
+  server.on("/success", HTTP_GET, [](AsyncWebServerRequest *request){
+    ledStrip.setColor(RgbColor(0, MAX_LUMINOSITY, 0));
     request->send(200, "text/plain", "ok");
   });
-  server.on("/error", HTTP_GET, [&ledStrip](AsyncWebServerRequest *request){
-    ledStrip.animate(FLASH, RgbColor(10, 0, 0), RgbColor(100, 0, 0));
+  server.on("/error", HTTP_GET, [](AsyncWebServerRequest *request){
+    ledStrip.animate(FLASH, RgbColor(10, 0, 0), RgbColor(MAX_LUMINOSITY, 0, 0));
     request->send(200, "text/plain", "ok");
   });
-  server.on("/process", HTTP_GET, [&ledStrip](AsyncWebServerRequest *request){
-    ledStrip.animate(CIRCLE, RgbColor(10, 5, 0), RgbColor(100, 50, 0));
+  server.on("/process", HTTP_GET, [](AsyncWebServerRequest *request){
+    ledStrip.animate(CIRCLE, RgbColor(10, 5, 0), RgbColor(MAX_LUMINOSITY, MAX_LUMINOSITY>>1, 0));
     request->send(200, "text/plain", "ok");
   });
-  server.on("/off", HTTP_GET, [&ledStrip](AsyncWebServerRequest *request){
+  server.on("/off", HTTP_GET, [](AsyncWebServerRequest *request){
     ledStrip.setColor(RgbColor(0, 0, 0));
     request->send(200, "text/plain", "ok");
   });
@@ -56,6 +68,8 @@ void setup(){
   server.begin();
   ledStrip.init();
   ota.init();
+
+  ledStrip.setColor(RgbColor(0,0,0));
 }
 
 unsigned long lastLoop = 0;
