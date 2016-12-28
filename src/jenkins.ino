@@ -10,15 +10,16 @@
 
 #include <ws2812.h>
 #include <OTA.h>
+#include <jenkins.h>
 
 #include "../config/config.h"
-#define MAX_LUMINOSITY 40
 
 // SKETCH BEGIN
 AsyncWebServer server(80);
 
 const char * deviceName = "jenkins-status";
 
+#define PIN_BUZZER 15
 #define BUILTIN_LED 2
 #define NB_PIXELS 12
 
@@ -26,11 +27,14 @@ NeoPixelBus<NeoGrbFeature, Neo800KbpsMethod> strip(NB_PIXELS, 2);
 
 WS2812 ledStrip(&strip);
 OTA ota(deviceName, BUILTIN_LED);
+Jenkins jenkins(&server, &ledStrip, PIN_BUZZER);
 
 void setup(){
   Serial.begin(115200);
   pinMode(BUILTIN_LED, OUTPUT);
+  pinMode(PIN_BUZZER, OUTPUT);
   digitalWrite(BUILTIN_LED, HIGH);
+  digitalWrite(PIN_BUZZER, LOW);
 
   WiFi.begin(CONFIG_SSID, CONFIG_PASSWORD);
 
@@ -45,29 +49,11 @@ void setup(){
     digitalWrite(BUILTIN_LED, HIGH);
   });
 
-  server.on("/heap", HTTP_GET, [](AsyncWebServerRequest *request){
-    request->send(200, "text/plain", String(ESP.getFreeHeap()));
-  });
-  server.on("/success", HTTP_GET, [](AsyncWebServerRequest *request){
-    ledStrip.setColor(RgbColor(0, MAX_LUMINOSITY, 0));
-    request->send(200, "text/plain", "ok");
-  });
-  server.on("/error", HTTP_GET, [](AsyncWebServerRequest *request){
-    ledStrip.animate(FLASH, RgbColor(10, 0, 0), RgbColor(MAX_LUMINOSITY, 0, 0));
-    request->send(200, "text/plain", "ok");
-  });
-  server.on("/process", HTTP_GET, [](AsyncWebServerRequest *request){
-    ledStrip.animate(CIRCLE, RgbColor(10, 5, 0), RgbColor(MAX_LUMINOSITY, MAX_LUMINOSITY>>1, 0));
-    request->send(200, "text/plain", "ok");
-  });
-  server.on("/off", HTTP_GET, [](AsyncWebServerRequest *request){
-    ledStrip.setColor(RgbColor(0, 0, 0));
-    request->send(200, "text/plain", "ok");
-  });
 
   server.begin();
   ledStrip.init();
   ota.init();
+  jenkins.init();
 
   ledStrip.setColor(RgbColor(0,0,0));
 }
@@ -85,4 +71,5 @@ void loop(){
   ArduinoOTA.handle();
   ota.loop();
   ledStrip.loop(dtMs);
+  jenkins.loop(dtMs);
 }
