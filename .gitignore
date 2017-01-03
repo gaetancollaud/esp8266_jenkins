@@ -2,4 +2,6 @@
 .piolibdeps
 .clang_complete
 .gcc-flags.json
-config/
+
+config/*
+!config/config.h.example

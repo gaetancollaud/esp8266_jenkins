@@ -12,7 +12,7 @@ void Jenkins::init(){
   });
   server->on("/error", HTTP_GET, [this](AsyncWebServerRequest *request){
     ledStrip->animate(FLASH, RgbColor(10, 0, 0), RgbColor(MAX_LUMINOSITY, 0, 0));
-    beep->play("00");
+    beep->play("0");
     request->send(200, "text/plain", "ok");
   });
   server->on("/process", HTTP_GET, [this](AsyncWebServerRequest *request){

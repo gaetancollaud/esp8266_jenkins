@@ -1,0 +1,17 @@
+#ifndef _CONFIG_H
+#define _CONFIG_H
+
+# rename this file to config.h
+
+
+
+define CONFIG_SSID "YOUR SSID"
+define CONFIG_PASSWORD "YOUR PASSWORD"
+
+
+#Uncomment if you want to use a static IP
+#define STATIC_IP_ADDRESS 192, 168, 5, 96
+#define STATIC_IP_NETMASK 255, 255, 255, 0
+#define STATIC_IP_GATEWAY 192, 168, 5, 1
+
+#endif
