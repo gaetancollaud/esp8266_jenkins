@@ -4,8 +4,9 @@
 #include <ESPAsyncWebServer.h>
 #include <NeoPixelBus.h>
 #include <ws2812.h>
+#include <beep.h>
 
-#define MAX_LUMINOSITY 40
+ #define MAX_LUMINOSITY 50
 
 #define DEBUG_JENKINS
 
@@ -17,7 +18,7 @@
 
 class Jenkins {
 public:
-  Jenkins(AsyncWebServer* server, WS2812* ledStrip, int pinBuzzer);
+  Jenkins(AsyncWebServer* server, WS2812* ledStrip, Beep* beep);
 
 	void init();
 
@@ -26,7 +27,7 @@ public:
 protected:
   AsyncWebServer* server;
   WS2812* ledStrip;
-  int pinBuzzer;
+  Beep* beep;
 };
 
 #endif
