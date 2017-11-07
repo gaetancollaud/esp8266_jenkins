@@ -20,6 +20,11 @@ void Jenkins::init(){
     beep->play("e");
     request->send(200, "text/plain", "ok");
   });
+  server->on("/merge", HTTP_GET, [this](AsyncWebServerRequest *request){
+    ledStrip->animate(FLASH, RgbColor(0, 0, 10), RgbColor(0,0,MAX_LUMINOSITY));
+    beep->play("merge");
+    request->send(200, "text/plain", "ok");
+  });
   // server->on("/beep", HTTP_GET, [this](AsyncWebServerRequest *request){
   //   digitalWrite(pinBuzzer, HIGH);
   //   request->send(200, "text/plain", "ok");
